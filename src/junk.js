@@ -1,4 +1,76 @@
 
+// function initShaderProgram(gl, vsSource, fsSource) {
+//     const vertexShader = loadShader(gl, gl.VERTEX_SHADER, vsSource);
+//     const fragmentShader = loadShader(gl, gl.FRAGMENT_SHADER, fsSource);
+ 
+//     const shaderProgram = gl.createProgram();
+//     gl.attachShader(shaderProgram, vertexShader);
+//     gl.attachShader(shaderProgram, fragmentShader);
+//     gl.linkProgram(shaderProgram);
+ 
+//     if (!gl.getProgramParameter(shaderProgram, gl.LINK_STATUS)) {
+//        alert('Unable to initialize the shader program: ' + gl.getProgramInfoLog(shaderProgram));
+//        return null;
+//     }
+ 
+//     return shaderProgram;
+//  }
+ 
+//  function loadShader(gl, type, source) {
+//     const shader = gl.createShader(type);
+ 
+//     gl.shaderSource(shader, source);
+ 
+//     gl.compileShader(shader);
+ 
+//     if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
+//        alert('An error occurred compiling the shaders: ' + gl.getShaderInfoLog(shader));
+//        gl.deleteShader(shader);
+//        return null;
+//     }
+ 
+//     return shader;
+//  }
+ 
+ 
+//  class ShaderProgram {
+//     constructor(gl, vertexShaderSource, fragmentShaderSource) {
+//        this.gl = gl;
+//        this.program = initShaderProgram(gl, vertexShaderSource, fragmentShaderSource);
+//        this.attributeLocations = null;
+//     }
+ 
+//     bind() {
+//        this.gl.useProgram(this.program);
+//     }
+ 
+//     updateUniformMat4(name, value) {
+//        this.gl.uniformMatrix4fv(
+//           this.gl.getUniformLocation(this.program, name),
+//           false,
+//           value);
+//     }
+ 
+//     updateUniformVec3(name, value) {
+//        this.gl.uniform3fv(
+//           this.gl.getUniformLocation(this.program, name),
+//           value);
+//     }
+ 
+//     getAttributeLocation(attribute) {
+//        return this.gl.getAttribLocation(this.program, attribute);
+//     }
+ 
+//     //TODO: move attributes inside shader, use yield to return a object containing all the attibutes?
+//     //TODO: cache uniform location inside shader, don't call gl.getUniformLocation everytime.
+//     //TODO: move private functions inside shader.
+//     //TODO: use uniform buffer objects.
+//  }
+
+
+
+
+
 // //Based on Mozilla's WebGL tutorial:
 // //https://developer.mozilla.org/en-US/docs/Web/API/WebGL_API/Tutorial
 
