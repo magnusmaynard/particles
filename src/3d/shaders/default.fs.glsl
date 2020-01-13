@@ -1,10 +1,8 @@
 #version 300 es
-layout(location = 0) in vec3 aPosition;
+precision mediump float;
 
-uniform mat4 uViewMatrix;
-uniform mat4 uProjectionMatrix;
-uniform mat4 uModelMatrix;
+out vec4 color;
 
 void main(void) {
-    gl_Position = uProjectionMatrix * uViewMatrix * uModelMatrix * vec4(aPosition, 1.0);
+    color = vec4(1.0, 1.0, 0, 1.0);
 }

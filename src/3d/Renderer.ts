@@ -26,14 +26,12 @@ export class Renderer {
         this.renderCount = 0;
 
         this.app = app;
-
         this.camera = new Camera(
             0.1,
             10000,
             this.canvas.width,
             this.canvas.height,
             45);
-
         this.scene = new Scene();
 
         this.app.onStartup(this);
@@ -41,11 +39,17 @@ export class Renderer {
         requestAnimationFrame(this.render);
     }
 
-    resize = (width: number, height: number) => {
-        this.canvas.width = width;
-        this.canvas.height = height;
+    updateSize = () => {
+        let displayWidth = this.canvas.clientWidth;
+        let displayHeight = this.canvas.clientHeight;
 
-        this.camera.resize(width, height);
+        if (this.canvas.width !== displayWidth ||
+            this.canvas.height !== displayHeight) {
+            this.canvas.width = displayWidth;
+            this.canvas.height = displayHeight;
+
+            this.camera.resize(displayWidth, displayHeight);
+        }
     }
 
     getRenderCount = () => {
@@ -61,7 +65,7 @@ export class Renderer {
 
             pointCloud.vao = this.gl.createVertexArray();
             this.gl.bindVertexArray(pointCloud.vao);
-    
+
             pointCloud.positionBuffer = this.gl.createBuffer();
             this.gl.bindBuffer(this.gl.ARRAY_BUFFER, pointCloud.positionBuffer);
             this.gl.bufferData(this.gl.ARRAY_BUFFER, pointCloud.getPositions(), this.gl.STATIC_DRAW);
@@ -76,6 +80,7 @@ export class Renderer {
     private render = () => {
         this.app.onUpdate(this);
 
+        this.updateSize();
         this.gl.viewport(0, 0, this.canvas.width, this.canvas.height);
         this.gl.clear(this.gl.COLOR_BUFFER_BIT | this.gl.DEPTH_BUFFER_BIT);
 
