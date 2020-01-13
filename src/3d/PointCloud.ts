@@ -6,6 +6,7 @@ export default class PointCloud {
     private id: number;
     private positions: Float32Array;
     private translation: vec3;
+    private rotation: vec3;
     private model: mat4;
     private modelIsDirty: boolean;
 
@@ -18,6 +19,7 @@ export default class PointCloud {
         this.id = PointCloud.nextId++;
         this.positions = positions;
         this.translation = vec3.create();
+        this.rotation = vec3.create();
         this.model = mat4.create();
         this.modelIsDirty = true;
 
@@ -28,7 +30,10 @@ export default class PointCloud {
 
     private updateModel() {
         if (this.modelIsDirty) {
-            mat4.translate(this.model, mat4.create(), this.translation);
+            mat4.rotateZ(this.model, mat4.create(), this.rotation[2]);
+            mat4.rotateY(this.model, this.model, this.rotation[1]);
+            mat4.rotateX(this.model, this.model, this.rotation[0]);
+            mat4.translate(this.model, this.model, this.translation);
         }
     }
 
@@ -38,6 +43,11 @@ export default class PointCloud {
 
     public setTranslation(translation: vec3) {
         this.translation = translation;
+        this.modelIsDirty = true;
+    }
+
+    public setRotation(rotation: vec3) {
+        this.rotation = rotation;
         this.modelIsDirty = true;
     }
 

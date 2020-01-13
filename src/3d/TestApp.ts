@@ -1,21 +1,21 @@
 import IApp from './IApp';
 import { Renderer } from './Renderer';
 import PointCloud from './PointCloud';
+import AsciiLoader from './AsciiPointCloudLoader';
 import { vec3 } from 'gl-matrix';
+import axios from "axios";
 
 export default class TestApp implements IApp {
 
     onStartup = (renderer: Renderer) => {
-        var positions: number[] = [];
+        renderer.getCamera().setPosition(vec3.fromValues(0, 0, -2));
 
-        for (var y = -100; y < 100; y++) {
-            for (var x = -100; x < 100; x++) {
-                positions.push(x * 0.1, y * 0.1, 10.0);
-            }
-        }
-
-        let pointCloud = new PointCloud(new Float32Array(positions));
-        renderer.scene.add("points", pointCloud);
+        // Load point cloud.
+        axios.get("/data/guanyin.asc")
+            .then((response: any) => {
+                let pointCloud = AsciiLoader.Load(response.data);
+                renderer.scene.add("points", pointCloud)
+            });
     }
 
     onShutdown = (renderer: Renderer) => {
@@ -24,9 +24,9 @@ export default class TestApp implements IApp {
 
     onUpdate = (renderer: Renderer) => {
         let points = renderer.scene.get("points");
-        if(points) {
+        if (points) {
             let i = renderer.getRenderCount() / 100;
-            points.setTranslation(vec3.fromValues(Math.sin(i), Math.cos(i), 0));
+            points.setRotation(vec3.fromValues(0, i, 0));
         }
     }
 }

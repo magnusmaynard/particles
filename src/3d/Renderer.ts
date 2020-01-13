@@ -39,6 +39,10 @@ export class Renderer {
         requestAnimationFrame(this.render);
     }
 
+    getCamera = () => {
+        return this.camera;
+    }
+
     updateSize = () => {
         let displayWidth = this.canvas.clientWidth;
         let displayHeight = this.canvas.clientHeight;

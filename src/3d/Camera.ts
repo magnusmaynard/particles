@@ -29,7 +29,7 @@ export default class Camera {
         this.height = height;
         this.fov = fov;
 
-        this.position = vec3.fromValues(0, 0, 0);
+        this.position = vec3.fromValues(0, 0, -1);
         this.forward = vec3.fromValues(0, 0, 1);
         this.up = vec3.fromValues(0, 1, 0);
 
