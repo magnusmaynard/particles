@@ -64,11 +64,18 @@ export default class ShaderProgram {
     }
 
     updateUniform = (name: string, value: mat4) => {
-        if(this.program != null) {
+        if (this.program != null) {
             this.gl.uniformMatrix4fv(
                 this.gl.getUniformLocation(this.program, name),
                 false,
                 value);
         }
+    }
+
+    getUniformLocation = (name: string) => {
+        if (this.program != null) {
+            return this.gl.getUniformLocation(this.program, name);
+        }
+        return null;
     }
 }

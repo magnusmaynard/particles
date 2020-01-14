@@ -1,4 +1,4 @@
-import PointCloud from "./PointCloud";
+import PointCloud from "./renderables/PointCloud";
 
 export default class Scene{
     private pointClouds: Map<string, PointCloud>;
