@@ -11,7 +11,7 @@ export default class TestApp implements IApp {
         renderer.getCamera().setPosition(vec3.fromValues(0, 0, -3));
 
         // Load point cloud.
-        axios.get("/data/buda_downsampled.asc")
+        axios.get("/data/buda_med.asc")
             .then((response: any) => {
                 let pointCloud = AsciiLoader.Load(response.data);
                 renderer.scene.add("buda", pointCloud)
