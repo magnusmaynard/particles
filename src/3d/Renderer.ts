@@ -72,7 +72,7 @@ export class Renderer {
     }
 
     private renderPointCloud = (pointCloud: PointCloud) => {
-        this.pipeline.updateUniform("uModelMatrix", pointCloud.getModelMatrix());
+        this.pipeline.updateUniformMat4("uModelMatrix", pointCloud.getModelMatrix());
 
         if (pointCloud.vao == null) {
             //TODO: remake if dirty.
@@ -99,8 +99,8 @@ export class Renderer {
         this.gl.clear(this.gl.COLOR_BUFFER_BIT | this.gl.DEPTH_BUFFER_BIT);
 
         // Update uniforms.
-        this.pipeline.updateUniform("uProjectionMatrix", this.camera.getProjectionMatrix());
-        this.pipeline.updateUniform("uViewMatrix", this.camera.getViewMatrix());
+        this.pipeline.updateUniformMat4("uProjectionMatrix", this.camera.getProjectionMatrix());
+        this.pipeline.updateUniformMat4("uViewMatrix", this.camera.getViewMatrix());
 
         // Render scene.
         this.scene.getPointClouds().forEach(pointcloud => {
@@ -124,7 +124,10 @@ export class Renderer {
         this.updateSize();
 
         this.geometryPass();
-        this.postProcessingPass();
+
+        this.pipeline.hiddenPointRemoval(this.camera.getProjectionMatrix());
+        
+        // this.postProcessingPass();
 
         this.renderCount++;
         requestAnimationFrame(this.render);

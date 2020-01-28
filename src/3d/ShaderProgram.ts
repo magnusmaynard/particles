@@ -62,8 +62,24 @@ export default class ShaderProgram {
     bind() {
         this.gl.useProgram(this.program);
     }
+    
+    updateUniformInt = (name: string, value: number) => {
+        if (this.program != null) {
+            this.gl.uniform1i(
+                this.gl.getUniformLocation(this.program, name),
+                value);
+        }
+    }
+    
+    updateUniformFloat = (name: string, value: number) => {
+        if (this.program != null) {
+            this.gl.uniform1f(
+                this.gl.getUniformLocation(this.program, name),
+                value);
+        }
+    }
 
-    updateUniform = (name: string, value: mat4) => {
+    updateUniformMat4 = (name: string, value: mat4) => {
         if (this.program != null) {
             this.gl.uniformMatrix4fv(
                 this.gl.getUniformLocation(this.program, name),
