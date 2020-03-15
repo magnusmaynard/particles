@@ -11,7 +11,7 @@ export default class TestApp implements IApp {
         renderer.getCamera().setPosition(vec3.fromValues(0, 0, -1.3));
 
         // Load point cloud.
-        axios.get("/data/buda_med.asc")
+        axios.get("/data/buda_sampled.asc")
             .then((response: any) => {
                 let pointCloud = AsciiLoader.Load(response.data);
                 renderer.scene.add("buda", pointCloud)
@@ -46,10 +46,10 @@ export default class TestApp implements IApp {
         //     grid.setTranslation(vec3.fromValues(0, Math.cos(i) * 100,Math.sin(i) * 100));
         // }
 
-        // let buda = renderer.scene.get("buda");
-        // if (buda) {
-        //     let i = renderer.getRenderCount() / 100;
-        //     buda.setRotation(vec3.fromValues(0, -i, 0));
-        // }
+        let buda = renderer.scene.get("buda");
+        if (buda) {
+            let i = renderer.getRenderCount() / 100;
+            buda.setRotation(vec3.fromValues(0, -i, 0));
+        }
     }
 }

@@ -65,7 +65,7 @@ export class Renderer {
     }
 
     private initState = () => {
-        this.gl.clearColor(0.0, 0.0, 0.0, 1.0);
+        this.gl.clearColor(0, 0.0, 0.0, 1.0);
         this.gl.enable(this.gl.DEPTH_TEST);
         this.gl.depthFunc(this.gl.LEQUAL);
         this.gl.disable(this.gl.CULL_FACE);
@@ -127,7 +127,7 @@ export class Renderer {
 
         this.pipeline.hiddenPointRemoval(this.camera.getProjectionMatrix());
         
-        // this.postProcessingPass();
+        this.postProcessingPass();
 
         this.renderCount++;
         requestAnimationFrame(this.render);

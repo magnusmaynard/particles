@@ -1,0 +1,9 @@
+{
+  "short_name": "Particles",
+  "name": "Particles",
+  "icons": [],
+  "start_url": ".",
+  "display": "standalone",
+  "theme_color": "#000000",
+  "background_color": "#ffffff"
+}
