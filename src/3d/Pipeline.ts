@@ -1,10 +1,11 @@
 import ShaderProgram from './ShaderProgram';
 import { mat4 } from 'gl-matrix'
 import GeometryBuffer from './buffers/GeometryBuffer';
+import PyramidBuffer from './buffers/PyramidBuffer';
+import OcclusionBuffer from './buffers/OcclusionBuffer';
 
 //@ts-ignore
 import raw from "raw.macro";
-import PyramidBuffer from './buffers/PyramidBuffer';
  
 // Import shaders.
 const defaultVS = String(raw("./shaders/default.vs.glsl"));
@@ -13,6 +14,7 @@ const fullscreenQuadVS = String(raw("./shaders/fullscreen-quad.vs.glsl"));
 const defaultFS = String(raw("./shaders/default.fs.glsl"));
 const hprReprojectFS = String(raw("./shaders/hpr-reproject.fs.glsl"));
 const hprPyramidFS = String(raw("./shaders/hpr-pyramid.fs.glsl"));
+const hprOcclusionFS = String(raw("./shaders/hpr-occlusion.fs.glsl"));
 const postProcessingFS = String(raw("./shaders/post-processing.fs.glsl"));
 
 export default class Pipeline {
@@ -21,21 +23,25 @@ export default class Pipeline {
 
     private geometryBuffer: GeometryBuffer;
     private pyramidBuffer: PyramidBuffer;
+    private occlusionBuffer: OcclusionBuffer;
 
     private geometryProgram: ShaderProgram;
     private postProcessingProgram: ShaderProgram;
     private hprReprojectProgram: ShaderProgram;
     private hprPyramidProgram: ShaderProgram;
+    private hprOcclusionProgram: ShaderProgram;
 
     constructor(gl: WebGL2RenderingContext) {
         this.gl = gl;
         this.geometryBuffer = new GeometryBuffer(this.gl);
         this.pyramidBuffer = new PyramidBuffer(this.gl);
+        this.occlusionBuffer = new OcclusionBuffer(this.gl);
         
         this.geometryProgram = new ShaderProgram(this.gl, defaultVS, defaultFS);
         this.postProcessingProgram = new ShaderProgram(this.gl, fullscreenQuadVS, postProcessingFS);
         this.hprReprojectProgram = new ShaderProgram(this.gl, fullscreenQuadVS, hprReprojectFS);
         this.hprPyramidProgram = new ShaderProgram(this.gl, fullscreenQuadVS, hprPyramidFS);
+        this.hprOcclusionProgram = new ShaderProgram(this.gl, fullscreenQuadVS, hprOcclusionFS)
 
         this.activeProgram = this.geometryProgram;
     }
@@ -83,7 +89,7 @@ export default class Pipeline {
         this.gl.bindTexture(this.gl.TEXTURE_2D, this.geometryBuffer.getDepthTexture());
     }
 
-    hiddenPointRemoval = (projectionMatrix: mat4) => {
+    hprGeneratePyramids = (projectionMatrix: mat4) => {
         // Setup initial pyramid level.
         this.useProgram(this.hprReprojectProgram);
         this.pyramidBuffer.bind(0);
@@ -119,5 +125,14 @@ export default class Pipeline {
             // this.gl.clear(this.gl.COLOR_BUFFER_BIT | this.gl.DEPTH_BUFFER_BIT);
             this.gl.drawArrays(this.gl.TRIANGLE_STRIP, 0, 4);
         }
+    }
+
+
+    hprGenerateOcclusionMask = () => {
+        this.useProgram(this.hprOcclusionProgram);
+        this.occlusionBuffer.bind();
+        this.gl.viewport(0, 0, this.gl.canvas.width, this.gl.canvas.height);
+
+        this.gl.drawArrays(this.gl.TRIANGLE_STRIP, 0, 4)
     }
 }

@@ -75,7 +75,7 @@ export class Renderer {
         this.pipeline.updateUniformMat4("uModelMatrix", pointCloud.getModelMatrix());
 
         if (pointCloud.vao == null) {
-            //TODO: remake if dirty.
+            //TODO: Only remake if dirty.
             console.debug("Constructing buffers");
 
             pointCloud.vao = this.gl.createVertexArray();
@@ -125,7 +125,9 @@ export class Renderer {
 
         this.geometryPass();
 
-        this.pipeline.hiddenPointRemoval(this.camera.getProjectionMatrix());
+        this.pipeline.hprGeneratePyramids(this.camera.getProjectionMatrix());
+
+        this.pipeline.hprGenerateOcclusionMask();
         
         this.postProcessingPass();
 
