@@ -22,7 +22,7 @@ export default class Pipeline {
     private activeProgram: ShaderProgram;
 
     private geometryBuffer: GeometryBuffer;
-    private pyramidBuffer: PyramidBuffer;
+    public pyramidBuffer: PyramidBuffer;
     private occlusionBuffer: OcclusionBuffer;
 
     private geometryProgram: ShaderProgram;
@@ -129,10 +129,10 @@ export default class Pipeline {
 
 
     hprGenerateOcclusionMask = () => {
-        this.useProgram(this.hprOcclusionProgram);
-        this.occlusionBuffer.bind();
-        this.gl.viewport(0, 0, this.gl.canvas.width, this.gl.canvas.height);
+        // this.useProgram(this.hprOcclusionProgram);
+        // this.occlusionBuffer.bind();
+        // this.gl.viewport(0, 0, this.gl.canvas.width, this.gl.canvas.height);
 
-        this.gl.drawArrays(this.gl.TRIANGLE_STRIP, 0, 4)
+        // this.gl.drawArrays(this.gl.TRIANGLE_STRIP, 0, 4)
     }
 }

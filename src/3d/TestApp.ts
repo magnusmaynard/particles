@@ -48,7 +48,7 @@ export default class TestApp implements IApp {
 
         let buda = renderer.scene.get("buda");
         if (buda) {
-            let i = renderer.getRenderCount() / 40;
+            let i = renderer.getRenderCount() / 200;
             buda.setRotation(vec3.fromValues(0, -i, 0));
         }
     }

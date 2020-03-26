@@ -3,6 +3,7 @@ import Camera from './Camera';
 import Pipeline from './Pipeline';
 import PointCloud from './renderables/PointCloud';
 import Scene from './Scene';
+import TextureDebugger from './debug/TextureDebugger';
 
 export class Renderer {
     private canvas: HTMLCanvasElement;
@@ -130,6 +131,8 @@ export class Renderer {
         this.pipeline.hprGenerateOcclusionMask();
         
         this.postProcessingPass();
+
+        TextureDebugger.Draw2D(this.gl, this.pipeline.pyramidBuffer.getTexture(5));
 
         this.renderCount++;
         requestAnimationFrame(this.render);
