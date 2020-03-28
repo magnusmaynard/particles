@@ -157,8 +157,8 @@ export class Renderer {
         
         this.postProcessingPass();
 
-        // TextureDebugger.Draw2D(this.gl, this.pipeline.pyramidBuffer.getTexture(5));
-        TextureDebugger.Draw2D(this.gl, this.pipeline.occlusionBuffer.getTexture());
+        TextureDebugger.Draw2D(this.gl, this.pipeline.pyramidBuffer.getTexture(5), 0);
+        TextureDebugger.Draw2D(this.gl, this.pipeline.occlusionBuffer.getTexture(), 1); 
 
         this._renderCount++;
         this.stats.end();

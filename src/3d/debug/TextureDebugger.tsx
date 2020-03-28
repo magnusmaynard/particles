@@ -8,7 +8,7 @@ const fs = String(raw("../shaders/texture-debugger.fs.glsl"));
 let program: ShaderProgram | null = null
 
 export default class TextureDebugger {
-    public static Draw2D(gl: WebGL2RenderingContext, texture: WebGLTexture|null) {
+    public static Draw2D(gl: WebGL2RenderingContext, texture: WebGLTexture|null, corner=0) {
         if (program == null) {
             program = new ShaderProgram(gl, "texure-debugger", vs, fs);
         }
@@ -16,7 +16,8 @@ export default class TextureDebugger {
         gl.bindFramebuffer(gl.FRAMEBUFFER, null);
         program.bind();
 
-        program.updateUniformFloat("uWidthScale", 0.4);
+        program.updateUniformFloat("uCorner", corner); // 0=TL, 1=TR
+        program.updateUniformFloat("uWidthScale", 0.3);
         program.updateUniformFloat("uScreenWidth", gl.canvas.width);
         program.updateUniformFloat("uScreenHeight", gl.canvas.height);
         

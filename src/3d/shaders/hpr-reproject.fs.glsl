@@ -24,9 +24,4 @@ void main(){
     viewSpacePos /= viewSpacePos.w;
 
     color = vec4(viewSpacePos.x, viewSpacePos.y, viewSpacePos.z, 1.0);
-
-    // //TODO: DEBUG!
-    // if(color.b > -0.9){
-    //     color = vec4(0.0, 1.0, color.b, 1.0);
-    // }
 }

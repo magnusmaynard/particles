@@ -7,8 +7,8 @@ uniform sampler2D uPyramidTextures[MAX_PYRAMID_TEXTURE_COUNT];
 uniform int uPyramidTextureCount;
 
 const float OCCLUSION_THRESHOLD = 0.1;
-const vec3 OCCLUSION_COLOR = vec3(0, 0, 0);
-const vec3 VISIBLE_COLOR = vec3(1, 1, 1);
+const vec3 OCCLUSION_COLOR = vec3(0, 1, 0);
+const vec3 VISIBLE_COLOR = vec3(1, 0, 0);
 
 out vec4 color;
 
@@ -18,23 +18,23 @@ out vec4 color;
     x is occluded by y.
 
     Formula:
-           y-x      -y
-    1 -  ------- . ----- 
-         ||y-x||   ||y||
+          y-x    -y
+    1 -  ----- . ---
+         |y-x|   |y|
 
-    Is the formula in the paper wrong, because this can result
-    in undefined behaviour when dividing by zero.
+    Note: The original formula in the paper is incorrect. It states
+    the divisors should be normalised, but this causes undefined
+    behaviour as it can divide by zero. Instead calculate the
+    magnitude of the divisors.
 */
-// float CalculateOcclusion(vec3 x, vec3 y) {
-//     return 1.0 - dot((y-x)/normalize(y-x), (-y)/normalize(y));
-// }
 float CalculateOcclusion(vec3 x, vec3 y) {
     return 1.0 - dot((y-x)/length(y-x), (-y)/length(y));
 }
 
 // Dynamic indexing of textures is not supported.
 // Have to do this. Perhaps it will be better the dynamically
-// create the shader depending on the number of levels.
+// create the shader depending on the number of levels to avoid
+// these if statements.
 vec3 fetch(int level, ivec2 pos) {
     if(level == 0) {
         return texelFetch(uPyramidTextures[0], pos, 0).rgb;
@@ -112,9 +112,16 @@ void main() {
     ivec2 pix = ivec2(gl_FragCoord.xy);
     vec3 current = fetch(0, pix);
 
-    for (int level = 1; level < 10; level++) {
+    for (int level = 0; level < uPyramidTextureCount; level++) {
         // Choose sample in bottomleft of each cell in next level.
-        pix = pix / 2;
+        // ivec2 pixBL = ivec2(pix.x - 1, pix.y - 1);
+        // ivec2 pixL  = ivec2(pix.x - 1, pix.y + 0);
+        // ivec2 pixTL = ivec2(pix.x - 1, pix.y + 1);
+        // ivec2 pixT  = ivec2(pix.x + 0, pix.y + 1);
+        // ivec2 pixTR = ivec2(pix.x + 1, pix.y + 1);
+        // ivec2 pixR  = ivec2(pix.x + 1, pix.y + 0);
+        // ivec2 pixBR = ivec2(pix.x + 1, pix.y - 1);
+        // ivec2 pixB  = ivec2(pix.x + 0, pix.y - 1);
         ivec2 pixBL = ivec2(pix.x - 1, pix.y - 1);
         ivec2 pixL  = ivec2(pix.x - 1, pix.y + 0);
         ivec2 pixTL = ivec2(pix.x - 1, pix.y + 1);
@@ -123,15 +130,6 @@ void main() {
         ivec2 pixR  = ivec2(pix.x + 1, pix.y + 0);
         ivec2 pixBR = ivec2(pix.x + 1, pix.y - 1);
         ivec2 pixB  = ivec2(pix.x + 0, pix.y - 1);
-
-        // ivec2 pixBL = ivec2(pix.x - 1, pix.y - 2) / 2;
-        // ivec2 pixL  = ivec2(pix.x - 1, pix.y - 1) / 2;
-        // ivec2 pixTL = ivec2(pix.x - 1, pix.y + 0) / 2;
-        // ivec2 pixT  = ivec2(pix.x + 0, pix.y + 0) / 2;
-        // ivec2 pixTR = ivec2(pix.x + 1, pix.y + 0) / 2;
-        // ivec2 pixR  = ivec2(pix.x + 1, pix.y - 1) / 2;
-        // ivec2 pixBR = ivec2(pix.x + 1, pix.y - 2) / 2;
-        // ivec2 pixB  = ivec2(pix.x + 0, pix.y + 2) / 2;
 
         // Get neighbouring pixels in the level.
         vec3 neiBL = fetch(level, pixBL);
@@ -152,9 +150,11 @@ void main() {
         occR    = min(occR, CalculateOcclusion(current, neiR));
         occBR   = min(occBR, CalculateOcclusion(current, neiBR));
         occB    = min(occB, CalculateOcclusion(current, neiB));
+
+        pix = pix / 2;
     }
 
-    // Label pixel as hole or visible.
+    // Label pixel as occluded or visible.
     float mean = (occBL + occL + occTL + occT + occTR + occR + occBR + occB) / 8.0;
     // color = vec4(mean);
     if(mean < OCCLUSION_THRESHOLD) {
