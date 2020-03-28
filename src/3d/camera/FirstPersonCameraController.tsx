@@ -20,6 +20,7 @@ export default class FirstPersonCameraController implements ICameraController {
     private _direction: Direction;
     private _velocity: vec3;
     private _friction: number;
+    private _isLocked: boolean;
 
     constructor(gl: WebGL2RenderingContext, camera: Camera) {
         this.gl = gl;
@@ -30,6 +31,7 @@ export default class FirstPersonCameraController implements ICameraController {
         this._direction = Direction.NONE;
         this._velocity = vec3.create();
         this._friction = 0.7;
+        this._isLocked = false;
 
         this.addEventListener(document.body, "mousedown", this.mouseDown);
         this.addEventListener(document.body, "mouseup", this.mouseUp);
@@ -40,6 +42,10 @@ export default class FirstPersonCameraController implements ICameraController {
     }
     
     update(timeDelta: number): void {
+        if(this._isLocked) {
+            return;
+        }
+
         // Add movement direction to velocity.
         let movement = vec3.create();
         if((this._direction & Direction.FORWARD) === Direction.FORWARD){
@@ -81,6 +87,10 @@ export default class FirstPersonCameraController implements ICameraController {
     }
 
     private mouseMove = (event: MouseEvent) => {
+        if(this._isLocked) {
+            return;
+        }
+
         const out = vec2.create();
         let mousePosition = vec2.fromValues(event.x, event.y);
         let delta = vec2.sub(out, mousePosition, this._lastMousePos);
@@ -111,6 +121,9 @@ export default class FirstPersonCameraController implements ICameraController {
                 break;
             case "d":
                 this._direction |= Direction.RIGHT;
+                break;
+            case " ":
+                this._isLocked = !this._isLocked;
                 break;
         }
     }

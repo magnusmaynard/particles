@@ -7,17 +7,25 @@ import TextureDebugger from './debug/TextureDebugger';
 import Stats from "stats.js"
 import ICameraController from './camera/ICameraController';
 import FirstPersonCameraController from './camera/FirstPersonCameraController';
+import dat from 'dat.gui';
+
+class GUIData {
+    showOcclusionTexture = true;
+    showPyramidTexture = true;
+    pyramidTextureLevel = 0;
+}
 
 export class Renderer {
     private canvas: HTMLCanvasElement;
     private gl: WebGL2RenderingContext;
-    private pipeline: Pipeline;
+    private _pipeline: Pipeline;
     private _renderCount: number;
-    private app: IApp;
+    private _app: IApp;
     private _camera: Camera;
-    private cameraController: ICameraController;
-    private stats: Stats;
-
+    private _cameraController: ICameraController;
+    private _stats: Stats;
+    private _gui: dat.GUI;
+    private _guiData: GUIData;
     public scene: Scene;
 
     constructor(canvas: HTMLCanvasElement, app: IApp) {
@@ -29,7 +37,7 @@ export class Renderer {
         this.canvas = canvas;
         this.gl = context;
         this._renderCount = 0;
-        this.app = app;
+        this._app = app;
 
         this._camera = new Camera(
             0.1,
@@ -37,20 +45,28 @@ export class Renderer {
             this.canvas.width,
             this.canvas.height,
             45);
-        this.cameraController = new FirstPersonCameraController(this.gl, this.camera);
+        this._cameraController = new FirstPersonCameraController(this.gl, this.camera);
 
         this.initState();
         this.initExtensions();
         this.updateSize();
 
-        this.pipeline = new Pipeline(this.gl);
+        this._pipeline = new Pipeline(this.gl);
         this.scene = new Scene();
-        this.app.onStartup(this);
+        this._app.onStartup(this);
 
         // Create frame interval counter.
-        this.stats = new Stats();
-        this.stats.showPanel(1);
-        document.body.appendChild(this.stats.dom);
+        this._stats = new Stats();
+        this._stats.showPanel(1);
+        document.body.appendChild(this._stats.dom);
+
+        // Create debug gui.
+        this._guiData = new GUIData();
+        this._gui = new dat.GUI();
+        this._gui.add(this._guiData, "showOcclusionTexture");
+        this._gui.add(this._guiData, "showPyramidTexture");
+        this._gui.add(this._guiData, "pyramidTextureLevel").min(0).max(20).step(1);
+        document.body.appendChild(this._gui.domElement);
 
         requestAnimationFrame(this.render);
     }
@@ -89,13 +105,13 @@ export class Renderer {
             this.gl.getExtension("EXT_color_buffer_float")
         );
 
-        if(!ext) {
-            console.error("Error: Missing extension!");
+        if (!ext) {
+            console.error("Error: Missing extensions!");
         }
     }
 
     private renderPointCloud = (pointCloud: PointCloud) => {
-        this.pipeline.updateUniformMat4("uModelMatrix", pointCloud.getModelMatrix());
+        this._pipeline.updateUniformMat4("uModelMatrix", pointCloud.getModelMatrix());
 
         if (pointCloud.vao == null) {
             //TODO: Only remake if dirty.
@@ -116,14 +132,14 @@ export class Renderer {
     }
 
     private geometryPass = () => {
-        this.pipeline.setupGeometryPass();
+        this._pipeline.setupGeometryPass();
 
         this.gl.viewport(0, 0, this.canvas.width, this.canvas.height);
         this.gl.clear(this.gl.COLOR_BUFFER_BIT | this.gl.DEPTH_BUFFER_BIT);
 
         // Update uniforms.
-        this.pipeline.updateUniformMat4("uProjectionMatrix", this.camera.projectionMatrix);
-        this.pipeline.updateUniformMat4("uViewMatrix", this.camera.viewMatrix);
+        this._pipeline.updateUniformMat4("uProjectionMatrix", this.camera.projectionMatrix);
+        this._pipeline.updateUniformMat4("uViewMatrix", this.camera.viewMatrix);
 
         // Render scene.
         this.scene.getPointClouds().forEach(pointcloud => {
@@ -132,7 +148,7 @@ export class Renderer {
     }
 
     private postProcessingPass = () => {
-        this.pipeline.setupPostProcessingPass();
+        this._pipeline.setupPostProcessingPass();
 
         this.gl.viewport(0, 0, this.canvas.width, this.canvas.height);
         this.gl.clear(this.gl.COLOR_BUFFER_BIT | this.gl.DEPTH_BUFFER_BIT);
@@ -143,27 +159,31 @@ export class Renderer {
 
     private render = () => {
         const start = performance.now();
-        this.stats.begin();
+        this._stats.begin();
 
-        this.app.onUpdate(this);
+        this._app.onUpdate(this);
 
         this.updateSize();
 
         this.geometryPass();
 
-        this.pipeline.hprGeneratePyramids(this.camera.projectionMatrix);
+        this._pipeline.hprGeneratePyramids(this.camera.projectionMatrix);
 
-        this.pipeline.hprGenerateOcclusionMask();
-        
+        this._pipeline.hprGenerateOcclusionMask();
+
         this.postProcessingPass();
 
-        TextureDebugger.Draw2D(this.gl, this.pipeline.pyramidBuffer.getTexture(5), 0);
-        TextureDebugger.Draw2D(this.gl, this.pipeline.occlusionBuffer.getTexture(), 1); 
+        if (this._guiData.showPyramidTexture) {
+            TextureDebugger.Draw2D(this.gl, this._pipeline.pyramidBuffer.getTexture(this._guiData.pyramidTextureLevel), 0);
+        }
+        if (this._guiData.showOcclusionTexture) {
+            TextureDebugger.Draw2D(this.gl, this._pipeline.occlusionBuffer.getTexture(), 1);
+        }
 
         this._renderCount++;
-        this.stats.end();
+        this._stats.end();
         const end = performance.now();
-        this.cameraController.update(end - start);
+        this._cameraController.update(end - start);
 
         requestAnimationFrame(this.render);
     }
