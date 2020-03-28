@@ -20,7 +20,7 @@
     "raw.macro": "^0.3.0",
     "react": "^16.12.0",
     "react-dom": "^16.12.0",
-    "react-scripts": "3.3.0",
+    "react-scripts": "3.4.0",
     "stats.js": "^0.17.0",
     "typescript": "^3.7.4"
   },
