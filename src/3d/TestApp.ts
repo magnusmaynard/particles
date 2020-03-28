@@ -8,7 +8,7 @@ import axios from "axios";
 export default class TestApp implements IApp {
 
     onStartup = (renderer: Renderer) => {
-        renderer.getCamera().setPosition(vec3.fromValues(0, 0, -1.0));
+        renderer.camera.position = vec3.fromValues(0, 0, -1.0);
 
         // Load point cloud.
         axios.get("/data/buda_sampled.asc")
@@ -46,10 +46,10 @@ export default class TestApp implements IApp {
         //     grid.setTranslation(vec3.fromValues(0, Math.cos(i) * 100,Math.sin(i) * 100));
         // }
 
-        let buda = renderer.scene.get("buda");
-        if (buda) {
-            let i = renderer.getRenderCount() / 200;
-            buda.setRotation(vec3.fromValues(0, i, 0));
-        }
+        // let buda = renderer.scene.get("buda");
+        // if (buda) {
+        //     let i = renderer.renderCount / 200;
+        //     buda.setRotation(vec3.fromValues(0, i, 0));
+        // }
     }
 }

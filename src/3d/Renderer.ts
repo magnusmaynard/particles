@@ -1,18 +1,21 @@
 import IApp from './IApp';
-import Camera from './Camera';
+import Camera from './camera/Camera';
 import Pipeline from './Pipeline';
 import PointCloud from './renderables/PointCloud';
 import Scene from './Scene';
 import TextureDebugger from './debug/TextureDebugger';
 import Stats from "stats.js"
+import ICameraController from './camera/ICameraController';
+import FirstPersonCameraController from './camera/FirstPersonCameraController';
 
 export class Renderer {
     private canvas: HTMLCanvasElement;
     private gl: WebGL2RenderingContext;
     private pipeline: Pipeline;
-    private renderCount: number;
+    private _renderCount: number;
     private app: IApp;
-    private camera: Camera;
+    private _camera: Camera;
+    private cameraController: ICameraController;
     private stats: Stats;
 
     public scene: Scene;
@@ -25,15 +28,16 @@ export class Renderer {
 
         this.canvas = canvas;
         this.gl = context;
-        this.renderCount = 0;
+        this._renderCount = 0;
         this.app = app;
 
-        this.camera = new Camera(
+        this._camera = new Camera(
             0.1,
             10000,
             this.canvas.width,
             this.canvas.height,
             45);
+        this.cameraController = new FirstPersonCameraController(this.gl, this.camera);
 
         this.initState();
         this.initExtensions();
@@ -51,8 +55,12 @@ export class Renderer {
         requestAnimationFrame(this.render);
     }
 
-    getCamera = () => {
-        return this.camera;
+    get camera(): Camera {
+        return this._camera;
+    }
+
+    get renderCount(): number {
+        return this._renderCount;
     }
 
     updateSize = () => {
@@ -66,10 +74,6 @@ export class Renderer {
 
             this.camera.resize(displayWidth, displayHeight);
         }
-    }
-
-    getRenderCount = () => {
-        return this.renderCount;
     }
 
     private initState = () => {
@@ -118,8 +122,8 @@ export class Renderer {
         this.gl.clear(this.gl.COLOR_BUFFER_BIT | this.gl.DEPTH_BUFFER_BIT);
 
         // Update uniforms.
-        this.pipeline.updateUniformMat4("uProjectionMatrix", this.camera.getProjectionMatrix());
-        this.pipeline.updateUniformMat4("uViewMatrix", this.camera.getViewMatrix());
+        this.pipeline.updateUniformMat4("uProjectionMatrix", this.camera.projectionMatrix);
+        this.pipeline.updateUniformMat4("uViewMatrix", this.camera.viewMatrix);
 
         // Render scene.
         this.scene.getPointClouds().forEach(pointcloud => {
@@ -138,7 +142,8 @@ export class Renderer {
     }
 
     private render = () => {
-	    this.stats.begin();
+        const start = performance.now();
+        this.stats.begin();
 
         this.app.onUpdate(this);
 
@@ -146,7 +151,7 @@ export class Renderer {
 
         this.geometryPass();
 
-        this.pipeline.hprGeneratePyramids(this.camera.getProjectionMatrix());
+        this.pipeline.hprGeneratePyramids(this.camera.projectionMatrix);
 
         this.pipeline.hprGenerateOcclusionMask();
         
@@ -155,8 +160,11 @@ export class Renderer {
         // TextureDebugger.Draw2D(this.gl, this.pipeline.pyramidBuffer.getTexture(5));
         TextureDebugger.Draw2D(this.gl, this.pipeline.occlusionBuffer.getTexture());
 
-        this.renderCount++;
-	    this.stats.end();
+        this._renderCount++;
+        this.stats.end();
+        const end = performance.now();
+        this.cameraController.update(end - start);
+
         requestAnimationFrame(this.render);
     }
 }
