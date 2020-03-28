@@ -33,6 +33,7 @@ export class Renderer {
             this.canvas.height,
             45);
         this.initState();
+        this.initExtensions();
         this.updateSize();
 
         this.pipeline = new Pipeline(this.gl);
@@ -70,6 +71,17 @@ export class Renderer {
         this.gl.enable(this.gl.DEPTH_TEST);
         this.gl.depthFunc(this.gl.LEQUAL);
         this.gl.disable(this.gl.CULL_FACE);
+    }
+
+    private initExtensions = () => {
+        const ext = (
+            // Allows rendering to float textures for the pyramids.
+            this.gl.getExtension("EXT_color_buffer_float")
+        );
+
+        if(!ext) {
+            console.error("Error: Missing extension!");
+        }
     }
 
     private renderPointCloud = (pointCloud: PointCloud) => {
@@ -128,7 +140,7 @@ export class Renderer {
 
         this.pipeline.hprGeneratePyramids(this.camera.getProjectionMatrix());
 
-        this.pipeline.hprGenerateOcclusionMask();
+        // this.pipeline.hprGenerateOcclusionMask();
         
         this.postProcessingPass();
 

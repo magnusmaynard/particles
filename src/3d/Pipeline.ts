@@ -122,7 +122,7 @@ export default class Pipeline {
             // Render to produce nearest points texture.
             let textureSize = this.pyramidBuffer.getTextureSizes(level);
             this.gl.viewport(0, 0, textureSize, textureSize);
-            // this.gl.clear(this.gl.COLOR_BUFFER_BIT | this.gl.DEPTH_BUFFER_BIT);
+            this.gl.clear(this.gl.COLOR_BUFFER_BIT | this.gl.DEPTH_BUFFER_BIT);
             this.gl.drawArrays(this.gl.TRIANGLE_STRIP, 0, 4);
         }
     }

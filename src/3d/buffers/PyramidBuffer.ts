@@ -1,3 +1,5 @@
+import Debug from "../debug/Debug";
+
 export default class PyramidBuffer {
     private gl: WebGL2RenderingContext;
     private textures: WebGLTexture[]; // TODO: Can this use LODs instead of multiple textures?
@@ -10,7 +12,7 @@ export default class PyramidBuffer {
         this.gl = gl;
         this.textures = [];
         this.framebuffers = [];
-        this.textureSizes = [];
+        this.textureSizes = [];        
 
         // Force to use a square power of 2 texture.
         this.textureSize = Math.max(
@@ -45,36 +47,13 @@ export default class PyramidBuffer {
     getLevelCount = () => {
         return this.levelCount
     }
-
-    private createFrameBuffers = () => {
-        for (let level = 0; level < this.levelCount; level++) {
-            const framebuffer = this.gl.createFramebuffer();
-            this.gl.bindFramebuffer(this.gl.FRAMEBUFFER, framebuffer);
-            this.gl.framebufferTexture2D(
-                this.gl.FRAMEBUFFER,
-                this.gl.COLOR_ATTACHMENT0,
-                this.gl.TEXTURE_2D,
-                this.textures[level],
-                0);
-
-            let status = this.gl.checkFramebufferStatus(this.gl.FRAMEBUFFER);
-            if (status !== this.gl.FRAMEBUFFER_COMPLETE) {
-                console.log(status);
-            }
-
-            if (framebuffer) {
-                this.framebuffers.push(framebuffer);
-            }
-        }
-    }
-
+    
     private createTextures = () => {
         let size = this.textureSize;
 
         for (let level = 0; level < this.levelCount; level++) {
             let texture = this.gl.createTexture();
             this.gl.bindTexture(this.gl.TEXTURE_2D, texture);
-
 
             const level = 0;
             const internalFormat = this.gl.RGBA32F;
@@ -109,4 +88,24 @@ export default class PyramidBuffer {
             size /= 2.0;
         }
     }
+
+    private createFrameBuffers = () => {
+        for (let level = 0; level < this.levelCount; level++) {
+            const framebuffer = this.gl.createFramebuffer();
+            this.gl.bindFramebuffer(this.gl.FRAMEBUFFER, framebuffer);
+            this.gl.framebufferTexture2D(
+                this.gl.FRAMEBUFFER,
+                this.gl.COLOR_ATTACHMENT0,
+                this.gl.TEXTURE_2D,
+                this.textures[level],
+                0);
+
+            Debug.CheckFramebuffer(this.gl);
+
+            if (framebuffer) {
+                this.framebuffers.push(framebuffer);
+            }
+        }
+    }
+
 }
