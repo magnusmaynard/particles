@@ -10,7 +10,7 @@ let program: ShaderProgram | null = null
 export default class TextureDebugger {
     public static Draw2D(gl: WebGL2RenderingContext, texture: WebGLTexture|null) {
         if (program == null) {
-            program = new ShaderProgram(gl, vs, fs);
+            program = new ShaderProgram(gl, "texure-debugger", vs, fs);
         }
 
         gl.bindFramebuffer(gl.FRAMEBUFFER, null);

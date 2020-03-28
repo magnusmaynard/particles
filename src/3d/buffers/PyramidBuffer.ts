@@ -2,8 +2,16 @@ import Debug from "../debug/Debug";
 
 export default class PyramidBuffer {
     private gl: WebGL2RenderingContext;
-    private textures: WebGLTexture[]; // TODO: Can this use LODs instead of multiple textures?
-    private framebuffers: WebGLFramebuffer[]; //TODO: Can this be a single framebuffer with multiple attachments?
+    // Each pyramid level must be seperate texture for the following:
+    // TEXTURE_2D_ARRAY or TEXTURE_2D using mipmap will not work as one
+    // layer must be written to, whilst another layer is being read from.
+    // This is not allow in this version of webgl. This could be resolved
+    // by copying or by ping-ponging between two set of textures, which
+    // is expensive. Also note that the layers in TEXTURE_ARRAY_2D, must
+    // all be the same size which wastes memory.
+    private textures: WebGLTexture[];
+    //TODO: Can this be a single framebuffer with multiple attachments?
+    private framebuffers: WebGLFramebuffer[]; 
     private textureSizes: number[];
     private textureSize: number;
     private levelCount: number;

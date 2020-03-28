@@ -148,11 +148,12 @@ export class Renderer {
 
         this.pipeline.hprGeneratePyramids(this.camera.getProjectionMatrix());
 
-        // this.pipeline.hprGenerateOcclusionMask();
+        this.pipeline.hprGenerateOcclusionMask();
         
         this.postProcessingPass();
 
-        TextureDebugger.Draw2D(this.gl, this.pipeline.pyramidBuffer.getTexture(5));
+        // TextureDebugger.Draw2D(this.gl, this.pipeline.pyramidBuffer.getTexture(5));
+        TextureDebugger.Draw2D(this.gl, this.pipeline.occlusionBuffer.getTexture());
 
         this.renderCount++;
 	    this.stats.end();

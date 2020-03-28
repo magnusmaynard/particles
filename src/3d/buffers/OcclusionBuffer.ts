@@ -15,7 +15,7 @@ export default class GeometryBuffer{
         this.gl.bindFramebuffer(this.gl.FRAMEBUFFER, this.frameBuffer);
     }
 
-    getOcclusionTexture = () => {
+    getTexture = () => {
         return this.occlusionTexture;
     }
 
@@ -25,10 +25,10 @@ export default class GeometryBuffer{
         this.gl.bindTexture(this.gl.TEXTURE_2D, colorTexture);
         
         const level = 0;
-        const internalFormat = this.gl.RGBA;
+        const internalFormat = this.gl.RGBA32F;
         const border = 0;
         const format = this.gl.RGBA;
-        const type = this.gl.UNSIGNED_BYTE;
+        const type = this.gl.FLOAT;
         const data = null;
 
         this.gl.texImage2D(

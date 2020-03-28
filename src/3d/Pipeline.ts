@@ -1,5 +1,5 @@
 import ShaderProgram from './ShaderProgram';
-import { mat4 } from 'gl-matrix'
+import { mat4, vec3, vec2 } from 'gl-matrix'
 import GeometryBuffer from './buffers/GeometryBuffer';
 import PyramidBuffer from './buffers/PyramidBuffer';
 import OcclusionBuffer from './buffers/OcclusionBuffer';
@@ -23,7 +23,7 @@ export default class Pipeline {
 
     private geometryBuffer: GeometryBuffer;
     public pyramidBuffer: PyramidBuffer;
-    private occlusionBuffer: OcclusionBuffer;
+    public occlusionBuffer: OcclusionBuffer;
 
     private geometryProgram: ShaderProgram;
     private postProcessingProgram: ShaderProgram;
@@ -37,11 +37,11 @@ export default class Pipeline {
         this.pyramidBuffer = new PyramidBuffer(this.gl);
         this.occlusionBuffer = new OcclusionBuffer(this.gl);
         
-        this.geometryProgram = new ShaderProgram(this.gl, defaultVS, defaultFS);
-        this.postProcessingProgram = new ShaderProgram(this.gl, fullscreenQuadVS, postProcessingFS);
-        this.hprReprojectProgram = new ShaderProgram(this.gl, fullscreenQuadVS, hprReprojectFS);
-        this.hprPyramidProgram = new ShaderProgram(this.gl, fullscreenQuadVS, hprPyramidFS);
-        this.hprOcclusionProgram = new ShaderProgram(this.gl, fullscreenQuadVS, hprOcclusionFS)
+        this.geometryProgram = new ShaderProgram(this.gl, "geometry", defaultVS, defaultFS);
+        this.postProcessingProgram = new ShaderProgram(this.gl, "post-processing", fullscreenQuadVS, postProcessingFS);
+        this.hprReprojectProgram = new ShaderProgram(this.gl, "hpr-project", fullscreenQuadVS, hprReprojectFS);
+        this.hprPyramidProgram = new ShaderProgram(this.gl, "hpr-pyramid", fullscreenQuadVS, hprPyramidFS);
+        this.hprOcclusionProgram = new ShaderProgram(this.gl, "hpr-occlusion", fullscreenQuadVS, hprOcclusionFS)
 
         this.activeProgram = this.geometryProgram;
     }
@@ -127,12 +127,52 @@ export default class Pipeline {
         }
     }
 
-
     hprGenerateOcclusionMask = () => {
-        // this.useProgram(this.hprOcclusionProgram);
-        // this.occlusionBuffer.bind();
-        // this.gl.viewport(0, 0, this.gl.canvas.width, this.gl.canvas.height);
+        this.useProgram(this.hprOcclusionProgram);
+        this.occlusionBuffer.bind();
 
-        // this.gl.drawArrays(this.gl.TRIANGLE_STRIP, 0, 4)
+
+        // let divide = (a: vec3, b: number) => {
+        //     return vec3.fromValues(a[0]/b, a[1]/b, a[2]/b);
+        // }
+    
+        // Alternative version.
+        // let out = vec3.create();
+        // let x = vec3.fromValues(0, 5, 10);
+        // let y = vec3.fromValues(0, 0, 1);
+
+        // let occ = 1 - (vec3.dot(
+        //     divide(
+        //         vec3.sub(out, y, x),
+        //         vec3.len(vec3.sub(out, y, x))),
+        //     divide(
+        //         vec3.negate(out, y),
+        //         vec3.len(y))));
+
+
+        // Returns NaN?
+        // let occ = 1 - (vec3.dot(
+        //     vec3.divide(out,
+        //         vec3.sub(out, y, x),
+        //         vec3.normalize(out, vec3.sub(out, y, x))),
+        //     vec3.divide(out,
+        //         vec3.inverse(out, y),
+        //         vec3.normalize(out, y))));
+
+        // console.log(occ);
+
+        this.activeProgram.updateUniformInt("uPyramidTextureCount", this.pyramidBuffer.getLevelCount());
+
+        // Bind all pyramid textures.
+        for (let level = 0; level < this.pyramidBuffer.getLevelCount(); level++) {
+            let pyramidLocation = this.activeProgram.getUniformLocation(`uPyramidTextures[${level}]`);
+            this.gl.uniform1i(pyramidLocation, level);
+            this.gl.activeTexture(this.gl.TEXTURE0 + level);
+            this.gl.bindTexture(this.gl.TEXTURE_2D, this.pyramidBuffer.getTexture(level));
+        }
+
+        this.gl.viewport(0, 0, this.gl.canvas.width, this.gl.canvas.height);
+        this.gl.clear(this.gl.COLOR_BUFFER_BIT | this.gl.DEPTH_BUFFER_BIT);
+        this.gl.drawArrays(this.gl.TRIANGLE_STRIP, 0, 4)
     }
 }

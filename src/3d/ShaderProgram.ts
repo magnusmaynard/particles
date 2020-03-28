@@ -2,27 +2,28 @@ import { mat4 } from 'gl-matrix'
 
 export default class ShaderProgram {
     private gl: WebGL2RenderingContext;
-    private program: WebGLProgram | null; //TODO:
+    private program: WebGLProgram | null;
 
     constructor(
         gl: WebGL2RenderingContext,
+        name: string,
         vertexShaderSource: string,
         fragmentShaderSource: string) {
         this.gl = gl;
-        this.program = this.createProgram(vertexShaderSource, fragmentShaderSource);
+        this.program = this.createProgram(name, vertexShaderSource, fragmentShaderSource);
     }
 
-    private createProgram = (vsSource: string, fsSource: string) => {
+    private createProgram = (name: string, vsSource: string, fsSource: string) => {
         const vertexShader = this.createShader(this.gl.VERTEX_SHADER, vsSource);
         const fragmentShader = this.createShader(this.gl.FRAGMENT_SHADER, fsSource);
         if (vertexShader == null || fragmentShader == null) {
-            console.error("Failed to create shaders.");
+            console.error(`Failed to create shader program: ${name}`);
             return null;
         }
 
         const program = this.gl.createProgram();
         if (program == null) {
-            console.error("Failed to create shader program.");
+            console.error(`Failed to create shader program: ${name}`);
             return null;
         }
 
@@ -32,8 +33,7 @@ export default class ShaderProgram {
 
         if (!this.gl.getProgramParameter(program, this.gl.LINK_STATUS)) {
             console.error(
-                "Failed to initialize the shader program: " +
-                this.gl.getProgramInfoLog(program));
+                `Failed to initialize the shader program ${name}:\n {this.gl.getProgramInfoLog(program)}`)
             return null;
         }
 
@@ -51,7 +51,13 @@ export default class ShaderProgram {
         this.gl.compileShader(shader);
 
         if (!this.gl.getShaderParameter(shader, this.gl.COMPILE_STATUS)) {
-            console.error('Failed to compile the shaders: ' + this.gl.getShaderInfoLog(shader));
+            let name = "Unknown type";
+            if(type === this.gl.VERTEX_SHADER){
+                name = "VERTEX_SHADER";
+            } else if(type === this.gl.FRAGMENT_SHADER){
+                name = "FRAGMENT_SHADER";
+            }
+            console.error(`Failed to compile the shader of type: ${name}\n ${this.gl.getShaderInfoLog(shader)}`);
             this.gl.deleteShader(shader);
             return null;
         }
