@@ -4,6 +4,7 @@ import Pipeline from './Pipeline';
 import PointCloud from './renderables/PointCloud';
 import Scene from './Scene';
 import TextureDebugger from './debug/TextureDebugger';
+import Stats from "stats.js"
 
 export class Renderer {
     private canvas: HTMLCanvasElement;
@@ -12,6 +13,7 @@ export class Renderer {
     private renderCount: number;
     private app: IApp;
     private camera: Camera;
+    private stats: Stats;
 
     public scene: Scene;
 
@@ -23,24 +25,28 @@ export class Renderer {
 
         this.canvas = canvas;
         this.gl = context;
-
         this.renderCount = 0;
         this.app = app;
+
         this.camera = new Camera(
             0.1,
             10000,
             this.canvas.width,
             this.canvas.height,
             45);
+
         this.initState();
         this.initExtensions();
         this.updateSize();
 
         this.pipeline = new Pipeline(this.gl);
-    
         this.scene = new Scene();
-
         this.app.onStartup(this);
+
+        // Create frame interval counter.
+        this.stats = new Stats();
+        this.stats.showPanel(1);
+        document.body.appendChild(this.stats.dom);
 
         requestAnimationFrame(this.render);
     }
@@ -132,6 +138,8 @@ export class Renderer {
     }
 
     private render = () => {
+	    this.stats.begin();
+
         this.app.onUpdate(this);
 
         this.updateSize();
@@ -147,6 +155,7 @@ export class Renderer {
         TextureDebugger.Draw2D(this.gl, this.pipeline.pyramidBuffer.getTexture(5));
 
         this.renderCount++;
+	    this.stats.end();
         requestAnimationFrame(this.render);
     }
 }

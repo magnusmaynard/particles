@@ -18,7 +18,7 @@ out vec4 color;
 
     Formula:
            y-x      -y
-    1 -  ------- o ----- 
+    1 -  ------- . ----- 
          ||y-x||   ||y||
 */
 float CalculateOcclusion(vec3 x, vec3 y) {
@@ -26,7 +26,7 @@ float CalculateOcclusion(vec3 x, vec3 y) {
 }
 
 /*
-    # Occlusion map algorithm
+    # Occlusion map algorithm:
     for each pixel
         for each neighbour
             for each level in neigbourhood
@@ -34,11 +34,11 @@ float CalculateOcclusion(vec3 x, vec3 y) {
             select lowest occlusion value
         calculate mean of all neighbour occlusion values
         if mean < 0.1:
-            is hole
+            occluded
         else:
             visible
 
-    # Layout of neightbours:
+    # Layout of neighbours:
     tl t tr
     l  s  r
     bl b br
