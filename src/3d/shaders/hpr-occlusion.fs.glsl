@@ -7,8 +7,8 @@ uniform sampler2D uPyramidTextures[MAX_PYRAMID_TEXTURE_COUNT];
 uniform int uPyramidTextureCount;
 
 const float OCCLUSION_THRESHOLD = 0.1;
-const vec3 OCCLUSION_COLOR = vec3(0, 1, 0);
-const vec3 VISIBLE_COLOR = vec3(1, 0, 0);
+const vec3 OCCLUSION_COLOR = vec3(0, 0, 0);
+const vec3 VISIBLE_COLOR = vec3(1, 1, 1);
 
 out vec4 color;
 
@@ -109,8 +109,8 @@ void main() {
     float occBR = occMax;
     float occB  = occMax;
 
-    ivec2 pix = ivec2(gl_FragCoord.xy);
-    vec3 current = fetch(0, pix);
+    vec2 pix = vec2(gl_FragCoord.xy);
+    vec3 current = fetch(0, ivec2(pix));
 
     for (int level = 0; level < uPyramidTextureCount; level++) {
         // Choose sample in bottomleft of each cell in next level.
@@ -122,14 +122,25 @@ void main() {
         // ivec2 pixR  = ivec2(pix.x + 1, pix.y + 0);
         // ivec2 pixBR = ivec2(pix.x + 1, pix.y - 1);
         // ivec2 pixB  = ivec2(pix.x + 0, pix.y - 1);
-        ivec2 pixBL = ivec2(pix.x - 1, pix.y - 1);
-        ivec2 pixL  = ivec2(pix.x - 1, pix.y + 0);
-        ivec2 pixTL = ivec2(pix.x - 1, pix.y + 1);
-        ivec2 pixT  = ivec2(pix.x + 0, pix.y + 1);
-        ivec2 pixTR = ivec2(pix.x + 1, pix.y + 1);
-        ivec2 pixR  = ivec2(pix.x + 1, pix.y + 0);
-        ivec2 pixBR = ivec2(pix.x + 1, pix.y - 1);
-        ivec2 pixB  = ivec2(pix.x + 0, pix.y - 1);
+
+        // ivec2 pixBL = ivec2(pix.x - 1.0, pix.y - 1.0);
+        // ivec2 pixL  = ivec2(pix.x - 1.0, pix.y + 0.0);
+        // ivec2 pixTL = ivec2(pix.x - 1.0, pix.y + 1.0);
+        // ivec2 pixT  = ivec2(pix.x + 0.0, pix.y + 1.0);
+        // ivec2 pixTR = ivec2(pix.x + 1.0, pix.y + 1.0);
+        // ivec2 pixR  = ivec2(pix.x + 1.0, pix.y + 0.0);
+        // ivec2 pixBR = ivec2(pix.x + 1.0, pix.y - 1.0);
+        // ivec2 pixB  = ivec2(pix.x + 0.0, pix.y - 1.0);
+
+        // TODO: this calculation is wrong.    
+        ivec2 pixBL = ivec2(pix.x - 2.0, pix.y - 2.0);
+        ivec2 pixL  = ivec2(pix.x - 2.0, pix.y + 0.0);
+        ivec2 pixTL = ivec2(pix.x - 2.0, pix.y + 2.0);
+        ivec2 pixT  = ivec2(pix.x + 0.0, pix.y + 2.0);
+        ivec2 pixTR = ivec2(pix.x + 2.0, pix.y + 2.0);
+        ivec2 pixR  = ivec2(pix.x + 2.0, pix.y + 0.0);
+        ivec2 pixBR = ivec2(pix.x + 2.0, pix.y - 2.0);
+        ivec2 pixB  = ivec2(pix.x + 0.0, pix.y - 2.0);
 
         // Get neighbouring pixels in the level.
         vec3 neiBL = fetch(level, pixBL);
@@ -151,7 +162,7 @@ void main() {
         occBR   = min(occBR, CalculateOcclusion(current, neiBR));
         occB    = min(occB, CalculateOcclusion(current, neiB));
 
-        pix = pix / 2;
+        pix = pix / 2.0;
     }
 
     // Label pixel as occluded or visible.

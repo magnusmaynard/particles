@@ -1,8 +1,43 @@
 import { mat4 } from 'gl-matrix'
 
+export class Uniform {
+    private gl: WebGL2RenderingContext;
+    private _program: WebGLProgram;
+    private _name: string;
+    private _location: WebGLUniformLocation | null;
+
+    constructor(gl: WebGL2RenderingContext, program: WebGLProgram, name: string) {
+        this.gl = gl;
+        this._program = program;
+        this._name = name;
+        this._location = this.gl.getUniformLocation(this._program, this._name);
+    }
+
+    get location(): WebGLUniformLocation | null {
+        return this._location;
+    }
+
+    updateInt(value: number) {
+        this.gl.uniform1i(this._location, value);
+    }
+
+    updateFloat(value: number) {
+        this.gl.uniform1f(this._location, value);
+    }
+
+    updateMat4(value: mat4) {
+        this.gl.uniformMatrix4fv(this._location, false, value);
+    }
+};
+
+interface IUniforms {
+    [key:string]: Uniform;
+}
+
 export default class ShaderProgram {
     private gl: WebGL2RenderingContext;
     private program: WebGLProgram | null;
+    private _uniforms: IUniforms;
 
     constructor(
         gl: WebGL2RenderingContext,
@@ -11,6 +46,7 @@ export default class ShaderProgram {
         fragmentShaderSource: string) {
         this.gl = gl;
         this.program = this.createProgram(name, vertexShaderSource, fragmentShaderSource);
+        this._uniforms = {};
     }
 
     private createProgram = (name: string, vsSource: string, fsSource: string) => {
@@ -65,34 +101,47 @@ export default class ShaderProgram {
         return shader;
     }
 
+    getUniform(name: string) {
+        return this._uniforms[name];
+    }
+
+    addUniform(name: string) {
+        if(this.program == null) {
+            console.error("Error: Program is null");
+        } else {
+            this._uniforms[name] = new Uniform(this.gl, this.program, name);
+        }
+        return this;
+    }
+
     bind() {
         this.gl.useProgram(this.program);
     }
     
-    updateUniformInt = (name: string, value: number) => {
-        if (this.program != null) {
-            this.gl.uniform1i(
-                this.gl.getUniformLocation(this.program, name),
-                value);
-        }
-    }
+    // updateUniformInt = (name: string, value: number) => {
+    //     if (this.program != null) {
+    //         this.gl.uniform1i(
+    //             this.gl.getUniformLocation(this.program, name),
+    //             value);
+    //     }
+    // }
     
-    updateUniformFloat = (name: string, value: number) => {
-        if (this.program != null) {
-            this.gl.uniform1f(
-                this.gl.getUniformLocation(this.program, name),
-                value);
-        }
-    }
+    // updateUniformFloat = (name: string, value: number) => {
+    //     if (this.program != null) {
+    //         this.gl.uniform1f(
+    //             this.gl.getUniformLocation(this.program, name),
+    //             value);
+    //     }
+    // }
 
-    updateUniformMat4 = (name: string, value: mat4) => {
-        if (this.program != null) {
-            this.gl.uniformMatrix4fv(
-                this.gl.getUniformLocation(this.program, name),
-                false,
-                value);
-        }
-    }
+    // updateUniformMat4 = (name: string, value: mat4) => {
+    //     if (this.program != null) {
+    //         this.gl.uniformMatrix4fv(
+    //             this.gl.getUniformLocation(this.program, name),
+    //             false,
+    //             value);
+    //     }
+    // }
 
     getUniformLocation = (name: string) => {
         if (this.program != null) {
